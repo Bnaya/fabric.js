@@ -467,35 +467,38 @@
 
     /**
      * Sets width of this canvas instance
-     * @param {Number} width value to set width to
+     * @param {Number|String} width value to set width to
+     * @param {Boolean}       [cssOnly=false] Set the given value only as the css width, leaving the canvas width prop unchanged. the width value should include the unit of measure (px/%/em)
      * @return {fabric.Canvas} instance
      * @chainable true
      */
-    setWidth: function (value) {
-      return this._setDimension('width', value);
+    setWidth: function (value, cssOnly) {
+      return cssOnly ? this._setCssDimension('width', value) : this._setDimension('width', value);
     },
 
     /**
      * Sets height of this canvas instance
-     * @param {Number} height value to set height to
+     * @param {Number|String} height value to set height to
+     * @param {Boolean}       [cssOnly=false] Set the given value only as the css height, leaving the canvas height prop unchanged. the width value should include the unit of measure (px/%/em)
      * @return {fabric.Canvas} instance
      * @chainable true
      */
-    setHeight: function (value) {
-      return this._setDimension('height', value);
+    setHeight: function (value, cssOnly) {
+      return cssOnly ? this._setCssDimension('height', value) : this._setDimension('height', value);
     },
 
     /**
-     * Sets dimensions (width, height) of this canvas instance
-     * @param {Object} dimensions Object with width/height properties
-     * @param {Number} [dimensions.width] Width of canvas element
-     * @param {Number} [dimensions.height] Height of canvas element
+     * Sets dimensions (width, height) of this canvas instance. when cssOnly flag active you should also supply the unit of measure (px/%/em)
+     * @param {Object}        dimensions          Object with width/height properties
+     * @param {Number|String} [dimensions.width]  Width of canvas element
+     * @param {Number|String} [dimensions.height] Height of canvas element
+     * @param {Boolean}       [cssOnly=false]     Set the given dimensions only as css dimensions
      * @return {fabric.Canvas} thisArg
      * @chainable
      */
-    setDimensions: function(dimensions) {
+    setDimensions: function (dimensions, cssOnly) {
       for (var prop in dimensions) {
-        this._setDimension(prop, dimensions[prop]);
+        cssOnly ? this._setCssDimension(prop, dimensions[prop]) : this._setDimension(prop, dimensions[prop]);
       }
       return this;
     },
@@ -529,6 +532,30 @@
 
       this.calcOffset();
       this.renderAll();
+
+      return this;
+    },
+
+    /**
+     * Helper for setting css width/height
+     * @private
+     * @param {String} prop property (width|height)
+     * @param {String} value value to set property to
+     * @return {fabric.Canvas} instance
+     * @chainable true
+     */
+    _setCssDimension: function (prop, value) {
+      this.lowerCanvasEl.style[prop] = value;
+
+      if (this.upperCanvasEl) {
+        this.upperCanvasEl.style[prop] = value;
+      }
+
+      if (this.wrapperEl) {
+        this.wrapperEl.style[prop] = value;
+      }
+
+      this.calcOffset();
 
       return this;
     },

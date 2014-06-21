@@ -835,6 +835,9 @@
           height: upperCanvasEl.height / bounds.height
         };
       }
+
+      this.calcOffset();
+
       return {
         x: pointer.x * cssScale.width,
         y: pointer.y * cssScale.height

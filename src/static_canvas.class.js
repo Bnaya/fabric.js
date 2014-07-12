@@ -468,38 +468,55 @@
     /**
      * Sets width of this canvas instance
      * @param {Number|String} width value to set width to
-     * @param {Boolean}       [cssOnly=false] Set the given value only as the css width, leaving the canvas width prop unchanged. the width value should include the unit of measure (px/%/em)
+     * @param {Object}        [options]                     Options object
+     * @param {Boolean}       [options.backstoreOnly=false] Set the given dimensions only as canvas backstore dimensions
+     * @param {Boolean}       [options.cssOnly=false]       Set the given dimensions only as css dimensions
      * @return {fabric.Canvas} instance
      * @chainable true
      */
-    setWidth: function (value, cssOnly) {
-      return cssOnly ? this._setCssDimension('width', value) : this._setDimension('width', value);
+    setWidth: function (value, options) {
+      return this.setDimensions({ width: value }, options);
     },
 
     /**
      * Sets height of this canvas instance
      * @param {Number|String} height value to set height to
-     * @param {Boolean}       [cssOnly=false] Set the given value only as the css height, leaving the canvas height prop unchanged. the width value should include the unit of measure (px/%/em)
+     * @param {Object}        [options]                     Options object
+     * @param {Boolean}       [options.backstoreOnly=false] Set the given dimensions only as canvas backstore dimensions
+     * @param {Boolean}       [options.cssOnly=false]       Set the given dimensions only as css dimensions
      * @return {fabric.Canvas} instance
      * @chainable true
      */
-    setHeight: function (value, cssOnly) {
-      return cssOnly ? this._setCssDimension('height', value) : this._setDimension('height', value);
+    setHeight: function (value, options) {
+      return this.setDimensions({ height: value }, options);
     },
 
     /**
-     * Sets dimensions (width, height) of this canvas instance. when cssOnly flag active you should also supply the unit of measure (px/%/em)
-     * @param {Object}        dimensions          Object with width/height properties
-     * @param {Number|String} [dimensions.width]  Width of canvas element
-     * @param {Number|String} [dimensions.height] Height of canvas element
-     * @param {Boolean}       [cssOnly=false]     Set the given dimensions only as css dimensions
+     * Sets dimensions (width, height) of this canvas instance. when options.cssOnly flag active you should also supply the unit of measure (px/%/em)
+     * @param {Object}        dimensions                    Object with width/height properties
+     * @param {Number|String} [dimensions.width]            Width of canvas element
+     * @param {Number|String} [dimensions.height]           Height of canvas element
+     * @param {Object}        [options]                     Options object
+     * @param {Boolean}       [options.backstoreOnly=false] Set the given dimensions only as canvas backstore dimensions
+     * @param {Boolean}       [options.cssOnly=false]       Set the given dimensions only as css dimensions
      * @return {fabric.Canvas} thisArg
      * @chainable
      */
-    setDimensions: function (dimensions, cssOnly) {
+    setDimensions: function (dimensions, options) {
+      var cssValue;
+
+      options = options || {};
+
       for (var prop in dimensions) {
-        cssOnly ? this._setCssDimension(prop, dimensions[prop]) : this._setDimension(prop, dimensions[prop]);
+        cssValue = dimensions[prop];
+
+        !options.cssOnly ? (this._setBackstoreDimension(prop, dimensions[prop]), cssValue += 'px') : '';
+        !options.backstoreOnly ? this._setCssDimension(prop, cssValue) : '';
       }
+
+      !options.cssOnly ? this.renderAll() : '';
+      this.calcOffset();
+
       return this;
     },
 
@@ -511,27 +528,18 @@
      * @return {fabric.Canvas} instance
      * @chainable true
      */
-    _setDimension: function (prop, value) {
+    _setBackstoreDimension: function (prop, value) {
       this.lowerCanvasEl[prop] = value;
-      this.lowerCanvasEl.style[prop] = value + 'px';
 
       if (this.upperCanvasEl) {
         this.upperCanvasEl[prop] = value;
-        this.upperCanvasEl.style[prop] = value + 'px';
       }
 
       if (this.cacheCanvasEl) {
         this.cacheCanvasEl[prop] = value;
       }
 
-      if (this.wrapperEl) {
-        this.wrapperEl.style[prop] = value + 'px';
-      }
-
       this[prop] = value;
-
-      this.calcOffset();
-      this.renderAll();
 
       return this;
     },
@@ -554,8 +562,6 @@
       if (this.wrapperEl) {
         this.wrapperEl.style[prop] = value;
       }
-
-      this.calcOffset();
 
       return this;
     },

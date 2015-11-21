@@ -443,12 +443,16 @@
     createAccessors: function(klass) {
       var proto = klass.prototype;
 
+      window.accessorslist = window.accessorslist || {};
+
       for (var i = proto.stateProperties.length; i--; ) {
 
         var propName = proto.stateProperties[i],
             capitalizedPropName = propName.charAt(0).toUpperCase() + propName.slice(1),
             setterName = 'set' + capitalizedPropName,
             getterName = 'get' + capitalizedPropName;
+
+        window.accessorslist[capitalizedPropName] = propName;
 
         // using `new Function` for better introspection
         if (!proto[getterName]) {
